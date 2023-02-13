@@ -9,4 +9,4 @@
 - react-router-dom v6
 - redux
 - axios
-- styled-component
+- styled-components

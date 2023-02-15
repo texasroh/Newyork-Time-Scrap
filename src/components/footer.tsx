@@ -3,7 +3,8 @@ import styled from "styled-components";
 
 const Wrapper = styled.div`
   background-color: #d6d6d6;
-  height: 100px;
+  height: 80px;
+  flex-shrink: 0;
 `;
 
 const Menu = styled.ul`

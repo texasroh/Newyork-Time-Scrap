@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-export const ny_times_all_articles_url = `https://api.nytimes.com/svc/news/v3/content/all/all.json?api-key=${process.env.REACT_APP_NYT_API_KEY}`;
+export const ny_times_all_articles_url = `https://api.nytimes.com/svc/news/v3/content/all/all.json`;
 
 interface IRelatedUrls {
   suggested_link_text: string;
@@ -18,7 +18,7 @@ interface IMultimedia {
   copyright: string;
 }
 
-interface IArticle {
+export interface IArticle {
   section: string;
   subsection: string;
   title: string;
@@ -52,11 +52,39 @@ export interface IAllArticles {
   results: IArticle[];
 }
 
-export const useFetch = <T>(url: string) => {
-  const [data, setData] = useState<T>();
-  const [isLoading, setIsLoading] = useState(false);
+interface IUseFetchProps {
+  url: string;
+}
 
-  const fetchPage = (page: number) => {};
+const perPage = 20;
+
+export const useFetch = <T>(
+  url: string,
+  options?: { onSuccess?: (data: T) => void }
+) => {
+  const [data, setData] = useState<T | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const isFetching = useRef(false);
+
+  const fetchPage = (page: number) => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    setIsLoading(true);
+    fetch(
+      `${url}?api-key=${
+        process.env.REACT_APP_NYT_API_KEY
+      }&limit=${perPage}&offset=${(page - 1) * perPage}`
+    )
+      .then((response) => response.json())
+      .then((data: T) => {
+        setData(data);
+        setIsLoading(false);
+        isFetching.current = false;
+        if (options?.onSuccess) {
+          options.onSuccess(data);
+        }
+      });
+  };
 
   return { data, isLoading, fetchPage };
 };

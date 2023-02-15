@@ -5,6 +5,8 @@ const Wrapper = styled.div`
   display: flex;
   padding: 15px 20px;
   gap: 10px;
+  height: 70px;
+  flex-shrink: 0;
 `;
 
 const Filter = styled.div`

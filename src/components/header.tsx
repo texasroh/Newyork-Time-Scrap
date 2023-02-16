@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import FilterModal from "./filterModal";
 
 const Wrapper = styled.div`
   background-color: white;
@@ -78,6 +79,7 @@ const Header = () => {
       <Filter>
         <Title>전체 국가</Title>
       </Filter>
+      <FilterModal />
     </Wrapper>
   );
 };

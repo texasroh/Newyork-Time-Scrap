@@ -1,9 +1,15 @@
 import React from "react";
+import { Provider } from "react-redux";
 import styled from "styled-components";
 import Router from "./router";
+import store from "./store";
 
 function App() {
-  return <Router />;
+    return (
+        <Provider store={store}>
+            <Router />
+        </Provider>
+    );
 }
 
 export default App;

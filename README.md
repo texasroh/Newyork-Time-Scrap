@@ -1,4 +1,4 @@
-# Newwork Times scrap
+# Newyork Times scrap
 
 ### mobile view only
 

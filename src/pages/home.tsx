@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { Link } from "react-router-dom";
 import { Dispatch } from "redux";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Header from "../components/header";
 import {
   IAllArticles,
@@ -10,6 +10,7 @@ import {
   ny_times_all_articles_url,
   useFetch,
 } from "../hooks/useFetch";
+import useIntersectionObserver from "../hooks/useIntersectionObserver";
 import { add, remove, RootState } from "../store";
 
 export const Wrapper = styled.div`
@@ -72,6 +73,31 @@ export const ArticleDate = styled.span`
   flex-shrink: 0;
 `;
 
+const LoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const rotate = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  width: 30px;
+  height: 30px;
+  border-radius: 100%;
+  border: 4px solid #e7e7e7;
+  border-top-color: gray;
+  animation: ${rotate} 0.8s infinite linear;
+  user-select: none;
+`;
+
 const mapStateToProps = (state: RootState) => {
   return { scrapUris: state.scrapReducer.map((article) => article.uri) };
 };
@@ -88,14 +114,17 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
 const Home = ({ scrapUris, addScrap, removeScrap }: Props) => {
-  const [offsetPage, setOffsetPage] = useState(0);
+  const [page, setPage] = useState(1);
+  const targetRef = useRef<HTMLDivElement>(null);
   const [articles, setArticles] = useState<IArticle[]>([]);
+  const isLoading = useRef(false);
 
-  const { data, isLoading, fetchPage } = useFetch<IAllArticles>(
+  const { data, fetchPage } = useFetch<IAllArticles>(
     ny_times_all_articles_url,
     {
       onSuccess: (data) => {
         setArticles((prev) => [...prev, ...data.results]);
+        isLoading.current = false;
       },
     }
   );
@@ -108,15 +137,27 @@ const Home = ({ scrapUris, addScrap, removeScrap }: Props) => {
     }
   };
 
+  useIntersectionObserver({
+    target: targetRef.current!,
+    onIntersect: ([{ isIntersecting }]) => {
+      if (isIntersecting && !isLoading.current) {
+        setPage((prev) => prev + 1);
+      }
+    },
+  });
+
   useEffect(() => {
-    fetchPage(1);
-  }, []);
+    if (isLoading.current) return;
+    isLoading.current = true;
+    fetchPage(page);
+  }, [page]);
+
   return (
     <Wrapper>
       <Header />
       <Articles>
-        {articles.map((article) => (
-          <Article key={article.uri}>
+        {articles.map((article, idx) => (
+          <Article key={idx}>
             <ArticleSection>
               <Link to={article.url} target="_blank">
                 <ArticleTitle>{article.title}</ArticleTitle>
@@ -131,6 +172,9 @@ const Home = ({ scrapUris, addScrap, removeScrap }: Props) => {
             </ArticleSection>
           </Article>
         ))}
+        <LoadingWrapper ref={targetRef}>
+          <LoadingSpinner />
+        </LoadingWrapper>
       </Articles>
     </Wrapper>
   );

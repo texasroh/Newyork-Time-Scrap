@@ -61,7 +61,9 @@ const Scrap = ({ scrapedArticles, removeScrap }: Props) => {
         {scrapedArticles.map((article) => (
           <Article key={article.uri}>
             <ArticleSection>
-              <ArticleTitle>{article.title}</ArticleTitle>
+              <Link to={article.url} target="_blank">
+                <ArticleTitle>{article.title}</ArticleTitle>
+              </Link>
               <ArticleBookMark onClick={() => removeScrap(article)}>
                 💛
               </ArticleBookMark>

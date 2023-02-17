@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
+import { Link } from "react-router-dom";
 import { Dispatch } from "redux";
 import styled from "styled-components";
 import Header from "../components/header";
@@ -117,7 +118,9 @@ const Home = ({ scrapUris, addScrap, removeScrap }: Props) => {
         {articles.map((article) => (
           <Article key={article.uri}>
             <ArticleSection>
-              <ArticleTitle>{article.title}</ArticleTitle>
+              <Link to={article.url} target="_blank">
+                <ArticleTitle>{article.title}</ArticleTitle>
+              </Link>
               <ArticleBookMark onClick={() => toogleScrap(article)}>
                 {scrapUris.includes(article.uri) ? "💛" : "🤍"}
               </ArticleBookMark>

@@ -1,5 +1,20 @@
+import { connect, ConnectedProps } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { Dispatch } from "redux";
 import styled from "styled-components";
+import Header from "../components/header";
+import { IArticle } from "../hooks/useFetch";
+import { remove, RootState } from "../store";
+import {
+  Article,
+  ArticleBookMark,
+  ArticleDate,
+  Articles,
+  ArticleSection,
+  ArticleSource,
+  ArticleTitle,
+  Wrapper,
+} from "./home";
 
 const Container = styled.div`
   height: 100%;
@@ -22,9 +37,44 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
-const Scrap = () => {
+const mapStateToProps = (state: RootState) => {
+  return {
+    scrapedArticles: state.scrapReducer,
+  };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch) => {
+  return { removeScrap: (article: IArticle) => dispatch(remove(article)) };
+};
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type Props = ConnectedProps<typeof connector>;
+
+const Scrap = ({ scrapedArticles, removeScrap }: Props) => {
   const navigate = useNavigate();
-  return (
+
+  return scrapedArticles.length ? (
+    <Wrapper>
+      <Header />
+      <Articles>
+        {scrapedArticles.map((article) => (
+          <Article key={article.uri}>
+            <ArticleSection>
+              <ArticleTitle>{article.title}</ArticleTitle>
+              <ArticleBookMark onClick={() => removeScrap(article)}>
+                💛
+              </ArticleBookMark>
+            </ArticleSection>
+            <ArticleSection>
+              <ArticleSource>{article.byline}</ArticleSource>
+              <ArticleDate>{article.created_date.split("T")[0]}</ArticleDate>
+            </ArticleSection>
+          </Article>
+        ))}
+      </Articles>
+    </Wrapper>
+  ) : (
     <Container>
       <svg
         enableBackground="new 0 0 48 48"
@@ -50,4 +100,4 @@ const Scrap = () => {
   );
 };
 
-export default Scrap;
+export default connector(Scrap);

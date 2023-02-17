@@ -3,58 +3,68 @@ import { combineReducers, createStore } from "redux";
 import { IArticle } from "./hooks/useFetch";
 
 export interface IFilterState {
-    headline: string;
-    dateFilter: string;
-    countryFilter: string[];
+  headline: string;
+  dateFilter: string;
+  countryFilter: string[];
 }
 
 const initialFilterState: IFilterState = {
-    headline: "",
-    dateFilter: "",
-    countryFilter: [],
+  headline: "",
+  dateFilter: "",
+  countryFilter: [],
 };
 
 const homeFilterSlice = createSlice({
-    name: "homeFilterSlice",
-    initialState: initialFilterState,
-    reducers: {
-        updateHomeFilter: (state, action) => action.payload,
-    },
+  name: "homeFilterSlice",
+  initialState: initialFilterState,
+  reducers: {
+    updateHomeFilter: (state, action) => action.payload,
+  },
 });
 
 const scrapFilterSlice = createSlice({
-    name: "scrapFilterSlice",
-    initialState: initialFilterState,
-    reducers: {
-        updateScrapFilter: (state, action) => action.payload,
-    },
+  name: "scrapFilterSlice",
+  initialState: initialFilterState,
+  reducers: {
+    updateScrapFilter: (state, action) => action.payload,
+  },
 });
 
-const initialScrapState: IArticle[] = [];
+const initialScrapState: IArticle[] = localStorage.getItem("scrapArticles")
+  ? JSON.parse(localStorage.getItem("scrapArticles") ?? "")
+  : [];
+
+const persistScrap = (newState: IArticle[]) => {
+  localStorage.setItem("scrapArticles", JSON.stringify(newState));
+};
 
 const scrapSlice = createSlice({
-    name: "scrapSlice",
-    initialState: initialScrapState,
-    reducers: {
-        add: (state, action) => {
-            return [action.payload, ...state];
-        },
-        remove: (state, action) => {
-            return state.filter(
-                (article) => article.uri !== action.payload.uri
-            );
-        },
+  name: "scrapSlice",
+  initialState: initialScrapState,
+  reducers: {
+    add: (state, action) => {
+      const newState = [action.payload, ...state];
+      persistScrap(newState);
+      return newState;
     },
+    remove: (state, action) => {
+      const newState = state.filter(
+        (article) => article.uri !== action.payload.uri
+      );
+      persistScrap(newState);
+      return newState;
+    },
+  },
 });
 
 const rootReducer = combineReducers({
-    homeFilterReducer: homeFilterSlice.reducer,
-    scrapFilterReducer: scrapFilterSlice.reducer,
-    scrapReducer: scrapSlice.reducer,
+  homeFilterReducer: homeFilterSlice.reducer,
+  scrapFilterReducer: scrapFilterSlice.reducer,
+  scrapReducer: scrapSlice.reducer,
 });
 
 const store = configureStore({
-    reducer: rootReducer,
+  reducer: rootReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
